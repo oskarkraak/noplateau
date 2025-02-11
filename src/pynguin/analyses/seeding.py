@@ -87,13 +87,20 @@ class InitialPopulationProvider:
         module_name = config.configuration.module_name.rsplit(".", maxsplit=1)[-1]
         logger.debug("Module name: %s", module_name)
         result: list[Path] = []
+        logger.debug("--- module path \'%s\'", module_path)
+        logger.debug("--- os walk lets see what happens")
         for root, _, files in os.walk(module_path):
+            logger.debug("--- files: %s", str(files))
             root_path = Path(root).resolve()  # type: ignore[arg-type]
             for name in files:
+                logger.debug("--- checking file \'%s\'", name)
                 assert isinstance(name, str)
                 if module_name in name and "test_" in name:
+                    logger.debug("--- is a test file")
                     result.append(root_path / name)
                     break
+                else:
+                    logger.debug("--- is not a test file")
         try:
             if len(result) > 0:
                 logger.debug("Module name found: %s", result[0])
@@ -425,6 +432,7 @@ def create_stmt_from_call(
             constant_provider=constant_provider,
         )
     gen_callable = find_gen_callable(call, objs_under_test, ref_dict)
+    logger.info("--- call: %s", call.func.attr)
     if gen_callable is None:
         logger.info("No such function found...")
         return None
