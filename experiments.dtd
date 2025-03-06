@@ -1,0 +1,84 @@
+<?xml encoding="UTF-8"?>
+
+    <!ELEMENT experiment (setup,projects)>
+    <!ATTLIST experiment
+        xmlns CDATA #FIXED ''
+        iterations CDATA #REQUIRED>
+
+    <!ELEMENT setup (constraint,docker+,configurations,output-variables)>
+    <!ATTLIST setup
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT projects (project)+>
+    <!ATTLIST projects
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT constraint (#PCDATA)>
+    <!ATTLIST constraint
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT docker EMPTY>
+    <!ATTLIST docker
+        xmlns CDATA #FIXED ''
+        name NMTOKEN #REQUIRED
+        path CDATA #REQUIRED
+        version NMTOKEN #REQUIRED>
+
+    <!ELEMENT configurations (global,configuration+)>
+    <!ATTLIST configurations
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT output-variables (output-variable)+>
+    <!ATTLIST output-variables
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT project (name,version,repository,description,sources,modules)>
+    <!ATTLIST project
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT global (option)+>
+    <!ATTLIST global
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT configuration (option)+>
+    <!ATTLIST configuration
+        xmlns CDATA #FIXED ''
+        id NMTOKEN #REQUIRED>
+
+    <!ELEMENT output-variable (#PCDATA)>
+    <!ATTLIST output-variable
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT name (#PCDATA)>
+    <!ATTLIST name
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT version (#PCDATA)>
+    <!ATTLIST version
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT repository (#PCDATA)>
+    <!ATTLIST repository
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT description (#PCDATA)>
+    <!ATTLIST description
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT sources (#PCDATA)>
+    <!ATTLIST sources
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT modules (module)+>
+    <!ATTLIST modules
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT module (#PCDATA)>
+    <!ATTLIST module
+        xmlns CDATA #FIXED ''>
+
+    <!ELEMENT option EMPTY>
+    <!ATTLIST option
+        xmlns CDATA #FIXED ''
+        key NMTOKEN #REQUIRED
+        value NMTOKEN #REQUIRED>
