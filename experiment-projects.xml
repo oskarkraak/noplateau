@@ -77,16 +77,6 @@
   </setup>
   <projects>
     <project>
-      <name>apimd</name>
-      <version>1.2.1</version>
-      <repository>https://github.com/KmolYuan/apimd</repository>
-      <description>API compiler for universal Markdown syntax</description>
-      <sources>projects/apimd</sources>
-      <modules>
-        <module>apimd.compiler</module>
-      </modules>
-    </project>
-    <project>
       <name>black</name>
       <version>20.8b1</version>
       <repository>https://github.com/psf/black</repository>
