@@ -155,12 +155,9 @@ RESULTS_DIR="${{RESULTS_BASE_DIR}}/{run.iteration}"
 
 WORK_DIR=$(mktemp -d -p "${{LOCAL_DIR}}")
 
-INPUT_DIR="{project_path / run.project_name}"
+INPUT_DIR="{base_path / run.project_sources}"
 OUTPUT_DIR="${{WORK_DIR}}/pynguin-report"
 PACKAGE_DIR="${{WORK_DIR}}"
-
-LOCAL_DOCKER_ROOT="${{LOCAL_DIR}}/docker-root-${{MIN_PROC_ID}}"
-PYNGUIN_DOCKER_IMAGE_PATH="{run.docker_images["pynguin"][0]}"
 
 cleanup () {{
   cp "${{OUTPUT_DIR}}/statistics.csv" \\
@@ -219,20 +216,23 @@ cleanup
         f.write(script)
 
 
-def _write_array_job_script(constraint: str, num_total_runs: int) -> None:
+def _write_array_job_script(num_total_runs: int) -> None:
+    if num_total_runs > 1000:
+        print("Job array length: " + str(num_total_runs))
+        print("Max job array length exceeded, try running fewer configurations or projects (check with \"scontrol show config | grep MaxArraySize\")")
+        exit()
     base_path = Path(".").absolute()
     run_path = base_path / "pynguin-runs"
     out_file = run_path / "${n}-out.txt"
     err_file = run_path / "${n}-err.txt"
     script = f"""#!/bin/bash
-#SBATCH --partition=anywhere
-#SBATCH --constraint={constraint}
+#SBATCH --nodelist=gruenau1,gruenau2
 #SBATCH --job-name=pynguin
 #SBATCH --time=02:30:00
 #SBATCH --mem=4GB
 #SBATCH --nodes=1-1
 #SBATCH --ntasks=1
-#SBATCH --ntasks-per-socket=1
+#SBATCH --cpus-per-task=2
 #SBATCH --mem-bind=local
 #SBATCH --array=0-{num_total_runs - 1}
 
@@ -290,8 +290,6 @@ then
 fi
 
 echo "SLURM job with ID ${{SLURM_JOB_ID}} submitted!"
-scontrol update jobid="${{SLURM_JOB_ID}}" MailUser="${{USER}}@fim.uni-passau.de"
-scontrol update jobid="${{SLURM_JOB_ID}}" MailType=END
 total=1
 while [[ "${{total}}" -gt 0 ]]
 do

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PID=$$
-EXPERIMENT_NAME="codetiming"
+EXPERIMENT_NAME="experiment-projects"
 
 function echo_blue {
   BLUE="\033[1;34m"
@@ -18,12 +18,29 @@ trap sig_handler INT TERM HUP QUIT
 
 function setup() {
   echo_blue "Create XML files for run..."
-  python3 execution.py -d "${EXPERIMENT_NAME}.xml"
+  python3.10 execution.py -d "${EXPERIMENT_NAME}.xml"
 
   chmod +x array_job.sh run_cluster_job.sh run-*.sh
 }
 
-function cleanup() {
+function pre_run_cleanup() {
+  rm -r targets/mistral
+  rm -r slurm-logs
+  rm -r outputs
+
+  rm -r report-searchonly
+  rm -r report-divllmthensearch
+  rm -r report-llmthensearch
+
+  #rm -r new-data
+  rm -r scratch
+  rm -r pynguin-runs
+  #mkdir pynguin-runs
+
+  post_run_cleanup
+}
+
+function post_run_cleanup() {
   echo_blue "Cleanup..."
   rm -rf array_job.sh run_cluster_job.sh
   find . -name "run-*.sh" -delete
@@ -38,14 +55,16 @@ function run() {
 
 function merge() {
   echo_blue "Merge result CSVs to new-data/${EXPERIMENT_NAME}.csv"
-  poetry run python merge_statistics_csv.py "${1}" "${2}"
+  python3.10 merge_statistics_csv.py "${1}" "${2}"
 }
 
 function main {
+  pre_run_cleanup
   setup
   run
-  merge "/scratch/${USER}/experiment-results" "new-data/${EXPERIMENT_NAME}.csv"
-  cleanup
+  mkdir "new-data"
+  merge "scratch/experiment-results" "new-data/${EXPERIMENT_NAME}.csv"
+  post_run_cleanup
 }
 
 main
