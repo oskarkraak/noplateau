@@ -58,10 +58,6 @@
       <output-variable>AlgorithmIterations</output-variable>
       <output-variable>Coverage</output-variable>
       <output-variable>RandomSeed</output-variable>
-      <output-variable>McCabeMin</output-variable>
-      <output-variable>McCabeMean</output-variable>
-      <output-variable>McCabeMedian</output-variable>
-      <output-variable>McCabeMax</output-variable>
       <output-variable>CodeObjects</output-variable>
       <output-variable>Predicates</output-variable>
       <output-variable>Goals</output-variable>
