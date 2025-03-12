@@ -263,8 +263,10 @@ while ! wait; do true; done
         f.write(script)
 
 
-def _write_main_script(num_total_runs: int) -> None:
+def _write_main_script(projects: List[Project], num_total_runs: int) -> None:
     base_path = Path(".").absolute()
+    run_path = base_path / "pynguin-runs"
+    setup_commands = "\\n".join([f"./setup_project.sh {project.name} > {run_path}/setup-{project.name}.log 2>&1" for project in projects])
     script = f"""#!/bin/bash
 SLURM_JOB_ID=0
 PID=$$
@@ -281,6 +283,10 @@ function sig_handler {{
   echo -e "Terminated: ${{0}}"
 }}
 trap sig_handler INT TERM HUP QUIT
+
+# Setup projects before running any jobs
+echo "Setting up projects..."
+{setup_commands}
 
 IFS=',' read SLURM_JOB_ID rest < <(sbatch --parsable array_job.sh)
 if [[ -z "${{SLURM_JOB_ID}}" ]]
@@ -323,8 +329,8 @@ def main(argv: List[str]) -> None:
     runs: List[Run] = _create_runs(slurm_setup, run_configurations, projects)
     for run in runs:
         _write_run_script(run)
-    _write_array_job_script(slurm_setup.constraint, len(runs))
-    _write_main_script(len(runs))
+    _write_array_job_script(len(runs))
+    _write_main_script(projects, len(runs))
 
 
 if __name__ == '__main__':
