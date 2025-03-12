@@ -2,8 +2,7 @@
 <!DOCTYPE experiment SYSTEM "experiments.dtd">
 <experiment iterations="30">
   <setup>
-    <constraint>thor</constraint>
-    <docker path="/scratch/lukasczy/pynguin.tar" name="pynguin" version="b178e2a9"/>
+    <constraint></constraint>
     <configurations>
       <global>
         <option key="maximum-search-time" value="600"/>

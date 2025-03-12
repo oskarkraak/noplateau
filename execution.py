@@ -11,8 +11,6 @@ from typing import List, Union, Tuple, Dict, Optional
 class SLURMSetup:
     iterations: int
     constraint: str
-    docker_images: Dict[str, Tuple[Union[str, os.PathLike], str]]
-
 
 @dataclasses.dataclass
 class Project:
@@ -25,7 +23,6 @@ class Project:
 @dataclasses.dataclass
 class Run:
     constraint: str
-    docker_images: Dict[str, Tuple[Union[str, os.PathLike], str]]
     configuration_name: str
     configuration_options: List[str]
     project_name: str
@@ -73,17 +70,7 @@ def _get_slurm_setup(experiment: ET.Element) -> SLURMSetup:
     iterations = experiment.attrib["iterations"]
     setup = experiment.find("setup")
     constraint = setup.find("constraint").text
-    docker_images: Dict[str, Tuple[Union[str, os.PathLike], str]] = {}
-    for docker in setup.findall("docker"):
-        docker_images[docker.attrib["name"]] = (
-            docker.attrib["path"], docker.attrib["version"]
-        )
-    return SLURMSetup(
-        iterations=int(iterations),
-        constraint=constraint,
-        docker_images=docker_images,
-    )
-
+    return SLURMSetup(iterations=int(iterations), constraint=constraint)
 
 def _get_global_config(element: Optional[ET.Element]) -> List[str]:
     if element is None:
@@ -134,7 +121,6 @@ def _create_runs(
                 for module in project.modules:
                     runs.append(Run(
                         constraint=slurm_setup.constraint,
-                        docker_images=slurm_setup.docker_images,
                         configuration_name=run_name,
                         configuration_options=run_configuration,
                         project_name=project.name,
@@ -156,8 +142,14 @@ def _write_run_script(run: Run) -> None:
 
 MIN_PROC_ID=$(numactl --show | grep physcpubind | cut -d' ' -f2)
 
-LOCAL_DIR="/local/${{USER}}"
-SCRATCH_DIR="/scratch/${{USER}}"
+# my local setup
+export PYNGUIN_DANGER_AWARE=true
+export PYTHONPATH=./src:$PYTHONPATH
+mkdir {base_path}/targets/mistral
+
+LOCAL_DIR="{base_path}"
+SCRATCH_DIR="{base_path}/scratch"
+mkdir $SCRATCH_DIR
 RESULTS_BASE_DIR="${{SCRATCH_DIR}}/experiment-results/{run.project_name}"
 RESULTS_DIR="${{RESULTS_BASE_DIR}}/{run.iteration}"
 
@@ -185,7 +177,6 @@ trap cleanup INT TERM HUP QUIT
 
 mkdir -p "${{OUTPUT_DIR}}"
 mkdir -p "${{RESULTS_DIR}}"
-mkdir -p "${{LOCAL_DOCKER_ROOT}}"
 
 echo "{run.project_name}=={run.project_version}" > "${{PACKAGE_DIR}}/package.txt"
 
@@ -204,30 +195,22 @@ seed: {run.iteration}
 configuration-id: {run.configuration_name}
 EOF
 
-dockerd-rootless-infosun \\
-  --data-root "${{LOCAL_DOCKER_ROOT}}" \\
-  -- \\
-    docker load -i "${{PYNGUIN_DOCKER_IMAGE_PATH}}"
+echo "Config: {run.configuration_name}"
+echo "Project: {run.project_name}"
+echo "Module: {run.module}"
 
-dockerd-rootless-infosun \\
-  --data-root "${{LOCAL_DOCKER_ROOT}}" \\
-  -- \\
-    docker run \\
-      --rm \\
-      --name="pynguin-{run.run_id}" \\
-      -v "${{INPUT_DIR}}":/input:ro \\
-      -v "${{OUTPUT_DIR}}":/output \\
-      -v "${{PACKAGE_DIR}}":/package:ro \\
-      pynguin:{run.docker_images["pynguin"][1]} \\
-        --configuration-id {run.configuration_name} \\
-        --project-name {run.project_name} \\
-        --module-name {run.module} \\
-        --seed {run.iteration} \\
-        --project-path /input \\
-        --output-path /output \\
-        --report-dir /output \\
-        -v \\
-        {" ".join(run.configuration_options)}
+cmd="python3.10 ./src/pynguin/__main__.py \
+  --configuration-id {run.configuration_name} \
+  --project-name {run.project_name} \
+  --module-name {run.module} \
+  --seed {run.iteration} \
+  --project-path "${{INPUT_DIR}}" \
+  --output-path "${{OUTPUT_DIR}}" \
+  --report-dir "${{OUTPUT_DIR}}" \
+  -v \
+  {" ".join(run.configuration_options)}"
+echo $cmd
+eval $cmd
 
 cleanup
 """
