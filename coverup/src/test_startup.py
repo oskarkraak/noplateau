@@ -1,0 +1,1 @@
+print('Startup file executed')

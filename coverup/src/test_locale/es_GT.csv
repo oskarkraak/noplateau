@@ -1,0 +1,5 @@
+"I love you","Te amo"
+"%(name)s liked this","A %(name)s les gustó esto","plural"
+"%(name)s liked this","A %(name)s le gustó esto","singular"
+"%(name)s is unknown","%(name)s es desconocido","unknown"
+"%(name)s is invalid","%(name)s es inválido","invalid"

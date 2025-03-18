@@ -1,0 +1,1 @@
+python3.13 -m coverup.__main__ --source-dir targets/flask/src/flask --tests-dir targets/flask/tests --model gpt-4o-mini --no-isolate-tests
