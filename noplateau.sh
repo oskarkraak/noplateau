@@ -3,17 +3,16 @@
 SECONDS=0
 
 # constants
-pynguin_time=5
+time_budget=60
+pynguin_time=15
+coverup_dir="coverup/src"
+target_dir="noplateautargets"
+target_module="noplateautargets.funcode"
+test_dir="noplateautests"
+
 
 base_dir=$(pwd)
 echo ">>> $base_dir"
-
-time_budget=$1
-
-if [[ -z "$time_budget" ]]; then
-    echo ">>> Usage: $0 <time_budget>"
-    exit 1
-fi
 
 # Check if OPENAI_API_KEY is set
 if [[ -z "$OPENAI_API_KEY" ]]; then
@@ -23,6 +22,12 @@ else
     echo ">>> OPENAI_API_KEY is set."
 fi
 
+rm -r $coverup_dir/$target_dir
+rm -r $coverup_dir/$test_dir
+mkdir $test_dir
+touch $target_dir/__init__.py
+cp -r $target_dir $coverup_dir/$target_dir
+cp -r $test_dir $coverup_dir/$test_dir
 
 # noplateau loop
 
@@ -38,17 +43,21 @@ function pynguin {
         pynguin_time=$TIME_LEFT
     fi
 
+    # TODO: make pynguin quit when plateau
     python3.10 ./src/pynguin/__main__.py \
-        --project-path targets \
-        --module-name fun \
-        --output-path outputs \
+        --project-path $target_dir \
+        --module-name $target_module \
+        --output-path $test_dir \
         --verbose \
         --initial-population-seeding True \
-        --initial_population_data targets \
+        --initial_population_data outputs \
         --seed 0 \
         --assertion_generation=NONE \
         --maximum_search_time $pynguin_time
     TIME_USED=$((TIME_USED + pynguin_time))
+
+    rm -r $coverup_dir/$test_dir
+    cp -r $test_dir $coverup_dir/$test_dir
 }
 
 function coverup {
@@ -56,12 +65,19 @@ function coverup {
     cd coverup/src/
     time_before=$SECONDS
 
-    # TODO: make coverup take time as input argument
-    python3.10 -m coverup.__main__ --source-dir targetsshort --tests-dir tests --model gpt-4o-mini --no-isolate-tests
+    # TODO: make coverup quit if time budget is used up (take time as input argument)
+    python3.10 -m coverup.__main__ \
+    --source-dir $target_dir \
+    --tests-dir $test_dir \
+    --model gpt-4o-mini \
+    --no-isolate-tests
     
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
     cd ../..
+
+    rm -r $test_dir
+    cp -r $coverup_dir/$test_dir $test_dir
 }
 
 # Alternating loop
