@@ -39,7 +39,7 @@ function pynguin {
     export PYNGUIN_DANGER_AWARE=true
     export PYTHONPATH=./src:$PYTHONPATH
     TIME_LEFT=$((time_budget - TIME_USED))
-    if [$TIME_LEFT -lt $pynguin_time]; then
+    if [ $TIME_LEFT -lt $pynguin_time ]; then
         pynguin_time=$TIME_LEFT
     fi
 
@@ -52,8 +52,8 @@ function pynguin {
         --initial-population-seeding True \
         --initial_population_data outputs \
         --seed 0 \
-        --assertion_generation=NONE \
         --maximum_search_time $pynguin_time
+        #--assertion_generation=NONE
     TIME_USED=$((TIME_USED + pynguin_time))
 
     rm -r $coverup_dir/$test_dir
