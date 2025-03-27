@@ -14,7 +14,7 @@ import logging
 import os
 
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import AnyStr
 from typing import cast
@@ -75,7 +75,7 @@ class InitialPopulationProvider:
         self._constant_provider: ConstantProvider = constant_provider
 
     @staticmethod
-    def _get_ast_tree(module_path: AnyStr | os.PathLike[AnyStr]) -> List[ast.Module] | None:
+    def _get_ast_tree(module_path: AnyStr | os.PathLike[AnyStr]) -> ast.Module | None:
         """Returns the ast tree from a module.
 
         Args:
@@ -86,7 +86,7 @@ class InitialPopulationProvider:
         """
         module_name = config.configuration.module_name.rsplit(".", maxsplit=1)[-1]
         logger.debug("Module name: %s", module_name)
-        results: list[Path] = []
+        result: list[Path] = []
         logger.debug("--- module path \'%s\'", module_path)
         logger.debug("--- os walk lets see what happens")
         for root, _, files in os.walk(module_path):
@@ -96,19 +96,17 @@ class InitialPopulationProvider:
                 logger.debug("--- checking file \'%s\'", name)
                 assert isinstance(name, str)
                 if module_name in name and "test_" in name:
-                    logger.info("%s is a test file", name)
-                    results.append(root_path / name)
+                    logger.debug("--- is a test file")
+                    result.append(root_path / name)
+                    break
                 else:
-                    logger.info("%s is not a test file", name)
+                    logger.debug("--- is not a test file")
         try:
-            if len(results) > 0:
-                logger.debug("Module name found: %s", results[0])
+            if len(result) > 0:
+                logger.debug("Module name found: %s", result[0])
                 stat.track_output_variable(RuntimeVariable.SuitableTestModule, value=True)
-                modules: List[ast.Module] = []
-                for result in results:
-                    with result.open(mode="r", encoding="utf-8") as module_file:
-                        modules.append(ast.parse(module_file.read()))
-                return modules
+                with result[0].open(mode="r", encoding="utf-8") as module_file:
+                    return ast.parse(module_file.read())
             else:
                 logger.debug("No suitable test module found.")
                 stat.track_output_variable(RuntimeVariable.SuitableTestModule, value=False)
@@ -124,8 +122,8 @@ class InitialPopulationProvider:
         Args:
             module_path: Path to the module to collect the test cases from
         """
-        trees = self._get_ast_tree(module_path)
-        if trees is None:
+        tree = self._get_ast_tree(module_path)
+        if tree is None:
             logger.info("Provided testcases are not used.")
             return
         transformer = AstToTestCaseTransformer(
@@ -134,9 +132,8 @@ class InitialPopulationProvider:
             != config.AssertionGenerator.NONE,
             constant_provider=self._constant_provider,
         )
-        for tree in trees:
-            transformer.visit(tree)
-            self._testcases.extend(transformer.testcases)
+        transformer.visit(tree)
+        self._testcases = transformer.testcases
         stat.track_output_variable(RuntimeVariable.FoundTestCases, len(self._testcases))
         stat.track_output_variable(RuntimeVariable.CollectedTestCases, len(self._testcases))
         self._mutate_testcases_initially()
@@ -435,8 +432,9 @@ def create_stmt_from_call(
             constant_provider=constant_provider,
         )
     gen_callable = find_gen_callable(call, objs_under_test, ref_dict)
+    logger.info("--- call: %s", call.func.attr)
     if gen_callable is None:
-        logger.info("No function '%s' found...", call.func.attr)
+        logger.info("No such function found...")
         return None
     return assemble_stmt_from_gen_callable(testcase, gen_callable, call, ref_dict)
 
