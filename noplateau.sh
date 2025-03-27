@@ -109,6 +109,8 @@ while [ $TIME_USED -lt $time_budget ]; do
     if [ "$cov" -eq 100 ]; then
         echo "✅ Coverage is 100%! Done."
         break
+    else
+        echo ">>> Coverage: ${cov}%"
     fi
 
     if [ $toggle -eq 0 ]; then
