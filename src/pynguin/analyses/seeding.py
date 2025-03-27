@@ -863,7 +863,58 @@ class AstToTestCaseTransformer(ast.NodeVisitor):
         self._create_assertions = create_assertions
         self._constant_provider = constant_provider
 
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:  # noqa: D102, N802
+    def _transform_inline_asserts(self, node: ast.FunctionDef) -> None:
+        """
+        Transforms an assignment immediately followed by an assert that uses the assigned variable
+        into a single inline assert. For example:
+        
+            result = add_numbers(3, 5)
+            assert result == 8
+
+        becomes
+
+            assert add_numbers(3, 5) == 8
+        """
+        new_body = []
+        i = 0
+        while i < len(node.body):
+            stmt = node.body[i]
+            # Look ahead: if current stmt is an assignment and next is an assert
+            if (
+                isinstance(stmt, ast.Assign)
+                and i + 1 < len(node.body)
+                and isinstance(node.body[i + 1], ast.Assert)
+            ):
+                assign_stmt = stmt
+                assert_stmt = node.body[i + 1]
+                # Check that there is exactly one target and that the assert's left-hand side is the same variable
+                if (
+                    len(assign_stmt.targets) == 1
+                    and isinstance(assign_stmt.targets[0], ast.Name)
+                    and isinstance(assert_stmt.test, ast.Compare)
+                    and isinstance(assert_stmt.test.left, ast.Name)
+                    and assign_stmt.targets[0].id == assert_stmt.test.left.id
+                ):
+                    # Create a new assert node replacing the variable reference with the assignment value
+                    new_assert = ast.Assert(
+                        test=ast.Compare(
+                            left=assign_stmt.value,
+                            ops=assert_stmt.test.ops,
+                            comparators=assert_stmt.test.comparators,
+                        ),
+                        msg=assert_stmt.msg,
+                    )
+                    new_body.append(new_assert)
+                    i += 2  # Skip both the assign and the assert
+                    continue
+            # Otherwise, just keep the statement as is
+            new_body.append(stmt)
+            i += 1
+        node.body = new_body
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> Any:
+        # First, transform inline asserts in the function body.
+        self._transform_inline_asserts(node)
         self._number_found_testcases += 1
         self._current_testcase = dtc.DefaultTestCase(self._test_cluster)
         self._current_parsable = True
@@ -871,6 +922,9 @@ class AstToTestCaseTransformer(ast.NodeVisitor):
         self.generic_visit(node)
         if self._current_parsable:
             self._testcases.append(self._current_testcase)
+            logger.info("Parsed test case: %s", node.name)
+        else:
+            logger.info("Couldn't parse test case: %s", node.name)
 
     def visit_Assign(self, node: ast.Assign) -> Any:  # noqa: D102, N802
         if self._current_parsable:
