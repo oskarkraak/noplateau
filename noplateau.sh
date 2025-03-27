@@ -53,6 +53,7 @@ function pynguin {
         --initial-population-seeding True \
         --initial_population_data $test_dir \
         --seed 0 \
+        --coverage-metrics BRANCH \
         --maximum_search_time $pynguin_time
         #--assertion_generation=NONE
     TIME_USED=$((TIME_USED + pynguin_time))
@@ -86,7 +87,7 @@ measure_coverage() {
 
     # Run pytest and capture both stdout and stderr
     local output
-    output=$(python3.10 -m pytest --cov=noplateautargets noplateautests --cov-report=term 2>&1)
+    output=$(python3.10 -m pytest --cov-branch --cov=noplateautargets noplateautests --cov-report=term 2>&1)
 
     # Extract total line and coverage percent
     local total_line
