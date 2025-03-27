@@ -81,18 +81,46 @@ function coverup {
     cp -r $coverup_dir/$test_dir $test_dir
 }
 
+measure_coverage() {
+    echo "▶️ Running tests with coverage..."
+
+    # Run pytest and capture both stdout and stderr
+    local output
+    output=$(python3.10 -m pytest --cov=noplateautargets noplateautests --cov-report=term 2>&1)
+
+    # Extract total line and coverage percent
+    local total_line
+    total_line=$(echo "$output" | grep -E 'TOTAL\s+[0-9]+')
+
+    local coverage
+    coverage=$(echo "$total_line" | awk '{print $(NF)}' | tr -d '%')
+
+    echo "📊 Extracted total coverage: ${coverage}%"
+
+    # Echo the coverage so the caller can capture it
+    echo "$coverage"
+}
+
 # Alternating loop
+cov=0
 toggle=0
 while [ $TIME_USED -lt $time_budget ]; do
+    cov=$(measure_coverage | tail -n 1)
+    if [ "$cov" -eq 100 ]; then
+        echo "✅ Coverage is 100%! Done."
+        break
+    fi
+
     if [ $toggle -eq 0 ]; then
-        coverup
+        pynguin
         toggle=1
     else
-        pynguin
+        coverup
         toggle=0
     fi    
     echo ">>> Total runtime: $SECONDS"
     echo ">>> Time budget used so far: $TIME_USED / $time_budget"
 done
+echo ">>> Final coverage: ${cov}%"
 
-echo ">>> Time budget exhausted. Exiting."
+echo ">>> Exiting."
