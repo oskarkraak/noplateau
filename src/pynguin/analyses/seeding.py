@@ -96,11 +96,11 @@ class InitialPopulationProvider:
                 logger.debug("--- checking file \'%s\'", name)
                 assert isinstance(name, str)
                 if module_name in name and "test_" in name:
-                    logger.debug("--- is a test file")
+                    logger.info("%s IS a test file", name)
                     result.append(root_path / name)
                     break
                 else:
-                    logger.debug("--- is not a test file")
+                    logger.info("%s is NOT a test file", name)
         try:
             if len(result) > 0:
                 logger.debug("Module name found: %s", result[0])
