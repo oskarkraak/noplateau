@@ -82,7 +82,21 @@ function coverup {
     cp -r $coverup_dir/$test_dir $test_dir
 }
 
-measure_coverage() {
+function make_diverse_tests {
+    echo ">>> Making more diverse tests"
+
+    mistral_script=$test_dir/llm_tests.py
+    python3.10 mistral.py \
+        --input "noplateautargets/funcode.py" \
+        --output $mistral_script \
+        --diversity True
+
+    echo ">>> Trimming markdown syntax from the generated file..."
+    sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $mistral_script
+    sed -i '/your_module/d' $mistral_script
+}
+
+function measure_coverage {
     echo "▶️ Running tests with coverage..."
 
     # Run pytest and capture both stdout and stderr
@@ -117,8 +131,12 @@ while [ $TIME_USED -lt $time_budget ]; do
     if [ $toggle -eq 0 ]; then
         pynguin
         toggle=1
-    else
+    elif [ $toggle -eq 1 ]; then
         coverup
+        toggle=2
+    else
+        make_diverse_tests
+        TIME_USED=$((TIME_USED + 15))
         toggle=0
     fi    
     echo ">>> Total runtime: $SECONDS"
