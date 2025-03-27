@@ -50,7 +50,7 @@ function pynguin {
         --output-path $test_dir \
         --verbose \
         --initial-population-seeding True \
-        --initial_population_data outputs \
+        --initial_population_data $test_dir \
         --seed 0 \
         --maximum_search_time $pynguin_time
         #--assertion_generation=NONE
