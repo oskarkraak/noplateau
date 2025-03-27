@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # === Config ===
-TEST_DIR="noplateautests"  # ← Set this to your test folder
+TEST_DIR=$1
 MERGED_FILE="${TEST_DIR}/test_merged_funcode.py"
 
 # === Find all test Python files ===

@@ -36,6 +36,7 @@ TIME_USED=0
 function pynguin {
     echo ">>> Pynguin"
 
+    bash merge_tests.sh $test_dir
     export PYNGUIN_DANGER_AWARE=true
     export PYTHONPATH=./src:$PYTHONPATH
     TIME_LEFT=$((time_budget - TIME_USED))
