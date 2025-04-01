@@ -49,12 +49,12 @@ function pynguin {
         --project-path $target_dir \
         --module-name $target_module \
         --output-path $test_dir \
-        --verbose \
         --initial-population-seeding True \
         --initial_population_data $test_dir \
         --seed 0 \
         --coverage-metrics BRANCH \
         --maximum_search_time $pynguin_time
+        #--verbose \
         #--assertion_generation=NONE
     TIME_USED=$((TIME_USED + pynguin_time))
 
@@ -85,11 +85,15 @@ function coverup {
 function make_diverse_tests {
     echo ">>> Making more diverse tests"
 
+    bash merge_tests.sh $test_dir
     mistral_script=$test_dir/llm_tests.py
     python3.10 mistral.py \
         --input "noplateautargets/funcode.py" \
+        --target_module_name "$target_module" \
+        --tests "${test_dir}/test_merged_funcode.py" \
         --output $mistral_script \
         --diversity True
+    bash remove_failing_tests.sh $mistral_script
 
     echo ">>> Trimming markdown syntax from the generated file..."
     sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $mistral_script
