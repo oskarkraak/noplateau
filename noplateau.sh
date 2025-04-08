@@ -3,6 +3,7 @@
 SECONDS=0
 
 # constants
+seed=0
 time_budget=60
 pynguin_time=15
 coverup_dir="coverup/src"
@@ -51,7 +52,7 @@ function pynguin {
         --output-path $test_dir \
         --initial-population-seeding True \
         --initial_population_data $test_dir \
-        --seed 0 \
+        --seed $seed \
         --coverage-metrics BRANCH \
         --maximum_search_time $pynguin_time
         #--verbose \
