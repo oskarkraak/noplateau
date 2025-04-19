@@ -154,10 +154,16 @@ def _write_run_script(run: Run) -> None:
     test_name = run.module.replace(".", "_")
     script = f"""#!/bin/bash
 
+    
+# Print Node Name
+# Use 'hostname' command which is generally available.
+# SLURMD_NODENAME is a SLURM-specific variable that should also contain the node name.
+echo "INFO: Running task {run.run_id} (Module: {run.module}) on node: $(hostname) (SLURM Node: ${{SLURMD_NODENAME:-NotSet}})"
+
 MIN_PROC_ID=$(numactl --show | grep physcpubind | cut -d' ' -f2)
 
-LOCAL_DIR="/local/${{USER}}"
-SCRATCH_DIR="/scratch/${{USER}}"
+LOCAL_DIR="{base_path}/local"
+SCRATCH_DIR="{base_path}/scratch"
 RESULTS_BASE_DIR="${{SCRATCH_DIR}}/experiment-results/{run.project_name}"
 RESULTS_DIR="${{RESULTS_BASE_DIR}}/{run.iteration}"
 
@@ -166,6 +172,8 @@ WORK_DIR=$(mktemp -d -p "${{LOCAL_DIR}}")
 INPUT_DIR="{base_path / run.project_sources}"
 OUTPUT_DIR="${{WORK_DIR}}/pynguin-report"
 PACKAGE_DIR="${{WORK_DIR}}"
+LOCAL_DOCKER_ROOT="${{LOCAL_DIR}}/docker-root-${{MIN_PROC_ID}}"
+PYNGUIN_DOCKER_IMAGE_PATH="{run.docker_images["pynguin"][0]}"
 
 cleanup () {{
   cp "${{OUTPUT_DIR}}/statistics.csv" \\
@@ -201,30 +209,25 @@ seed: {run.iteration}
 configuration-id: {run.configuration_name}
 EOF
 
-dockerd-rootless-infosun \\
-  --data-root "${{LOCAL_DOCKER_ROOT}}" \\
-  -- \\
-    docker load -i "${{PYNGUIN_DOCKER_IMAGE_PATH}}"
+echo "Run info:"
+cat ${{OUTPUT_DIR}}/run-info.txt
 
-dockerd-rootless-infosun \\
-  --data-root "${{LOCAL_DOCKER_ROOT}}" \\
-  -- \\
-    docker run \\
-      --rm \\
-      --name="pynguin-{run.run_id}" \\
-      -v "${{INPUT_DIR}}":/input:ro \\
-      -v "${{OUTPUT_DIR}}":/output \\
-      -v "${{PACKAGE_DIR}}":/package:ro \\
-      pynguin:{run.docker_images["pynguin"][1]} \\
-        --configuration-id {run.configuration_name} \\
-        --project-name {run.project_name} \\
-        --module-name {run.module} \\
-        --seed {run.iteration} \\
-        --project-path /input \\
-        --output-path /output \\
-        --report-dir /output \\
-        -v \\
-        {" ".join(run.configuration_options)}
+apptainer run \
+  --cleanenv \
+  --contain \
+  --bind "${{INPUT_DIR}}:/input:ro" \
+  --bind "${{OUTPUT_DIR}}:/output" \
+  --bind "${{PACKAGE_DIR}}:/package:ro" \
+  pynguin-container \
+    --configuration-id {run.configuration_name} \\
+    --project-name {run.project_name} \\
+    --module-name {run.module} \\
+    --seed {run.iteration} \\
+    --project-path /input \\
+    --output-path /output \\
+    --report-dir /output \\
+    -v \\
+    {" ".join(run.configuration_options)}
 
 cleanup
 """
@@ -243,9 +246,9 @@ def _write_array_job_script(num_total_runs: int) -> None:
     out_file = run_path / "${n}-out.txt"
     err_file = run_path / "${n}-err.txt"
     script = f"""#!/bin/bash
-#SBATCH --nodelist=gruenau1,gruenau2
+#SBATCH --nodelist=gruenau1
 #SBATCH --job-name=pynguin
-#SBATCH --time=02:30:00
+#SBATCH --time=00:29:00
 #SBATCH --mem=4GB
 #SBATCH --nodes=1-1
 #SBATCH --ntasks=1
@@ -300,10 +303,6 @@ function sig_handler {{
   echo -e "Terminated: ${{0}}"
 }}
 trap sig_handler INT TERM HUP QUIT
-
-# Setup projects before running any jobs
-echo "Setting up projects..."
-{setup_commands}
 
 IFS=',' read SLURM_JOB_ID rest < <(sbatch --parsable array_job.sh)
 if [[ -z "${{SLURM_JOB_ID}}" ]]

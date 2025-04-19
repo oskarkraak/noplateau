@@ -45,7 +45,6 @@ function post_run_cleanup() {
   rm -rf array_job.sh run_cluster_job.sh
   find . -name "run-*.sh" -delete
   find . -name "slurm*.out" -delete
-  echo_blue "Done"
 }
 
 function run() {
@@ -60,11 +59,14 @@ function merge() {
 
 function main {
   pre_run_cleanup
+  mkdir "local"
+  mkdir "scratch"
   setup
   run
   mkdir "new-data"
   merge "scratch/experiment-results" "new-data/${EXPERIMENT_NAME}.csv"
   post_run_cleanup
+  echo_blue "Done"
 }
 
 main
