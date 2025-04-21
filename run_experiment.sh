@@ -58,6 +58,14 @@ function merge() {
 }
 
 function main {
+  # Check if OPENAI_API_KEY is set
+  if [[ -z "$OPENAI_API_KEY" ]]; then
+      echo ">>> Error: OPENAI_API_KEY is not set."
+      exit 1
+  else
+      echo ">>> OPENAI_API_KEY is set."
+  fi
+
   pre_run_cleanup
   mkdir "local"
   mkdir "scratch"

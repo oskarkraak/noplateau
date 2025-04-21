@@ -77,5 +77,8 @@ fi
 # Install dependencies by installing the package
 pip install -r "${PACKAGE_DIR}/package.txt"
 
-# Execute Pynguin with all arguments passed to this script
-pynguin "$@"
+export PATH="$HOME/.local/bin:$PATH"
+export SSL_CERT_FILE="$(python3.10 -c 'import certifi; print(certifi.where())')"
+
+# Execute NoPlateau with all arguments passed to this script
+bash /pynguin/noplateau.sh "$@"

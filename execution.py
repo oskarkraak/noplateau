@@ -154,7 +154,6 @@ def _write_run_script(run: Run) -> None:
     test_name = run.module.replace(".", "_")
     script = f"""#!/bin/bash
 
-    
 # Print Node Name
 # Use 'hostname' command which is generally available.
 # SLURMD_NODENAME is a SLURM-specific variable that should also contain the node name.
@@ -219,13 +218,14 @@ apptainer run \
   --bind "${{OUTPUT_DIR}}:/output" \
   --bind "${{PACKAGE_DIR}}:/package:ro" \
   pynguin-container \
-    --configuration-id {run.configuration_name} \\
-    --project-name {run.project_name} \\
-    --module-name {run.module} \\
-    --seed {run.iteration} \\
-    --project-path /input \\
-    --output-path /output \\
-    --report-dir /output \\
+    {run.configuration_name} \\
+    {run.project_name} \\
+    {run.module} \\
+    {run.iteration} \\
+    ${{OPENAI_API_KEY}} \\
+    /input \\
+    /output \\
+    /output \\
     -v \\
     {" ".join(run.configuration_options)}
 
