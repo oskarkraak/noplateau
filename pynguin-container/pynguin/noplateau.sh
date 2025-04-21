@@ -16,29 +16,27 @@ target_dir=$6
 output_dir=$7
 
 test_dir="$output_dir/noplateautests/"
+coverup_target_dir="$output_dir/target/"
 base_dir=$(pwd)
 
 
 # Convert the module name (e.g., flutils.pathutils) to a relative path (e.g., flutils/pathutils)
 module_relative_path=$(echo "$target_module" | tr . /)
 # Construct the full target file path by joining the target directory and the relative path, adding the .py extension
-original_target_file_path="$input_dir/$module_relative_path.py"
-target_file_path="$output_dir/target/$module_relative_path.py"
-coverup_target_dir=$(dirname "$target_file_path")
+original_target_file_path="$target_dir/$module_relative_path.py"
+#target_file_path="$output_dir/target/$module_relative_path.py"
+#coverup_target_dir=$(dirname "$target_file_path")
 # Optional: Verify if the file exists
-if [ -f "$target_file_path" ]; then
-  echo "Calculated file path: $target_file_path"
+if [ -f "$original_target_file_path" ]; then
+  echo "Calculated file path: $original_target_file_path"
 else
-  echo "Warning: Calculated file path does not appear to exist: $target_file_path"
+  echo "Warning: Calculated file path does not appear to exist: $original_target_file_path"
   # You might want to exit or handle this case differently if the file is expected to exist
   # exit 1
 fi
 
-# Copy the target file to the coverup target directory
-cp "$original_target_file_path" "$coverup_target_dir/"
-echo "Successfully copied $original_target_file_path to $coverup_target_dir/"
 
-export PYTHONPATH="$coverup_target_dir:$PYTHONPATH"
+export PYTHONPATH="$output_dir:$PYTHONPATH"
 echo "PYTHONPATH=$PYTHONPATH"
 
 
@@ -63,7 +61,16 @@ mkdir $test_dir
 #cp -r $test_dir $coverup_dir/$test_dir
 mkdir $coverup_target_dir
 touch $coverup_target_dir/__init__.py
+# Copy the target file to the coverup target directory
+cp "$original_target_file_path" "$coverup_target_dir/"
+echo "Successfully copied $original_target_file_path to $coverup_target_dir/"
+echo "$coverup_target_dir:"
+ls $coverup_target_dir
 
+pynguin_original_import=$target_module
+filename=$(basename "$original_target_file_path")
+filename_without_ending="${filename%.py}"
+pynguin_replacement_import="target.$filename_without_ending"
 
 
 ### noplateau loop ###
@@ -75,6 +82,7 @@ function run_pynguin {
     time_before=$SECONDS
 
     bash /pynguin/merge_tests.sh $test_dir
+    sed -i "s#$pynguin_replacement_import#$pynguin_original_import#g" $test_dir/test_merged.py
     export PYNGUIN_DANGER_AWARE=true
     export PYTHONPATH=./src:$PYTHONPATH
     TIME_LEFT=$((time_budget - TIME_USED))
@@ -97,6 +105,8 @@ function run_pynguin {
         #--maximum_coverage_plateau 30 \
     echo "ran pynguin!"
 
+    sed -i "s#$pynguin_original_import#$pynguin_replacement_import#g" $test_dir/*.py
+    cat $test_dir/*.py
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
 }
@@ -115,7 +125,7 @@ function run_coverup {
     --model gpt-4o-mini \
     --no-isolate-tests
 
-    cat coverup-log
+    #cat coverup-log
     
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
@@ -219,8 +229,9 @@ EOF
     echo ">>> Total runtime: $SECONDS"
     echo ">>> Time budget used so far: $TIME_USED / $time_budget"
 done
+cov=$(measure_coverage | tail -n 1)
 echo ">>> Final coverage: ${cov}%"
 
-cp $test_dir $output_dir
+cp -r $test_dir $output_dir
 
 echo ">>> Exiting."

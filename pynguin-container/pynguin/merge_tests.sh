@@ -2,7 +2,7 @@
 
 # === Config ===
 TEST_DIR=$1
-MERGED_FILE="${TEST_DIR}/test_merged_funcode.py"
+MERGED_FILE="${TEST_DIR}/test_merged.py"
 
 # === Find all test Python files ===
 TEST_FILES=($(find "$TEST_DIR" -maxdepth 1 -type f -name "*.py" ! -name "$(basename "$MERGED_FILE")"))
@@ -31,7 +31,7 @@ for file in "${TEST_FILES[@]}"; do
     awk -v prefix="$prefix" '
         BEGIN { in_func = 0 }
         /^def test_/ {
-            sub(/^def test_/, "def test_funcode_" prefix "_test_")
+            sub(/^def test_/, "def test_" prefix "_test_")
             in_func = 1
         }
         in_func {
