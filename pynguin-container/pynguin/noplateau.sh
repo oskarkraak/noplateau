@@ -101,8 +101,8 @@ function run_pynguin {
         --seed $seed \
         --coverage-metrics BRANCH \
         --maximum_search_time $max_search_time \
+        --maximum_coverage_plateau 30 \
         --verbose
-        #--maximum_coverage_plateau 30 \
     echo "ran pynguin!"
 
     sed -i "s#$pynguin_original_import#$pynguin_replacement_import#g" $test_dir/*.py
