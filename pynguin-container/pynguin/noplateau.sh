@@ -2,9 +2,12 @@
 
 SECONDS=0
 
+mkdir FILE
+
 # constants
-time_budget=31
+time_budget=120
 estimated_pynguin_overhead_time=30
+coverup_dir="/pynguin/coverup/src"
 
 target_module=$3
 seed=$4
@@ -35,8 +38,23 @@ else
 fi
 
 
-export PYTHONPATH="$target_dir:$PYTHONPATH"
-echo "PYTHONPATH=$PYTHONPATH"
+
+# Extract the file part (everything after the last dot)
+# Remove the longest prefix ending in '.' (${string##*.})
+target_module_file="${target_module##*.}"
+# Extract the folder part (everything before the last dot)
+# Remove the shortest suffix starting with '.' (${string%.*})
+target_module_folder="${target_module%.*}"
+
+mkdir $test_dir
+coverup_test_dir=$coverup_dir/generated-tests/
+mkdir $coverup_test_dir
+cp -r $target_dir/$target_module_folder $coverup_dir
+touch $coverup_dir/$target_module_folder/__init__.py
+
+echo ">>> target_module_folder: $target_module_folder"
+echo ">>> target_module_file: $target_module_file"
+echo ">>> coverup_test_dir: $coverup_test_dir"
 
 
 echo "> Running NoPlateau:"
@@ -51,7 +69,14 @@ echo ">>> Output dir: $output_dir"
 
 export OPENAI_API_KEY="$OPENAI_API_KEY"
 
-mkdir -p "$test_dir"
+export PYTHONPATH="$target_dir:$PYTHONPATH"
+echo "PYTHONPATH=$PYTHONPATH"
+
+python3.10 -c "import $target_module"
+if [ $? -ne 0 ]; then
+  echo "Error: Failed to import Python module '$target_module'." >&2
+  #exit 1
+fi
 
 
 ### noplateau loop ###
@@ -96,11 +121,16 @@ function run_pynguin {
 
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
+
+    rm -r $coverup_test_dir
+    cp -r $test_dir $coverup_test_dir
+
     return $pynguin_exit_code # Return Pynguin's exit code
 }
 
 function run_coverup {
     echo ">>> Coverup"
+    cd $coverup_dir
     time_before=$SECONDS
 
     echo "PYTHONPATH: $PYTHONPATH" # TODO debug
@@ -112,18 +142,12 @@ function run_coverup {
     fi
 
     # TODO: make coverup quit if time budget is used up (take time as input argument)
-
-    echo "Running CoverUp command:"
-    echo "python3.10 -m coverup \"$original_target_file_path\" --package-dir \"$target_dir\" --tests-dir \"$test_dir\" --model gpt-4o-mini --no-isolate-tests --branch-coverage --no-add-to-pythonpath ......"
-
     python3.10 -m coverup \
-        "$original_target_file_path" \
-        --package-dir "$target_dir" \
-        --tests-dir "$test_dir" \
+        "$target_module_folder/$target_module_file.py" \
+        --source-dir $target_module_folder \
+        --tests-dir $coverup_test_dir \
         --model gpt-4o-mini \
-        --no-isolate-tests \
-        --no-add-to-pythonpath \
-        -d
+        --no-isolate-tests
 
     local coverup_exit_code=$?
     if [ $coverup_exit_code -ne 0 ]; then
@@ -136,9 +160,13 @@ function run_coverup {
 
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
+    cd $base_dir
+
+    rm -r $test_dir
+    cp -r $coverup_test_dir $test_dir
+
     return $coverup_exit_code # Return CoverUp's exit code
 }
-
 
 function make_diverse_tests {
     echo ">>> Making more diverse tests (Mistral - currently placeholder)"
@@ -225,7 +253,6 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     elif [ $toggle -eq 1 ]; then
         run_pynguin
         toggle=2
-        # exit 1
     elif [ $toggle -eq 2 ]; then
         # TODO integrate diversity again
     #     make_diverse_tests

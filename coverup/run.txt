@@ -1,3 +1,0 @@
-cd src 
-
-C:\Python311\python.exe -m coverup.__main__ --source-dir targets --tests-dir tests --model gpt-4o-mini --no-isolate-tests

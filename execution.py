@@ -212,6 +212,7 @@ echo "Run info:"
 cat ${{OUTPUT_DIR}}/run-info.txt
 
 apptainer run \
+  --writable-tmpfs \
   --cleanenv \
   --contain \
   --bind "${{INPUT_DIR}}:/input:ro" \
