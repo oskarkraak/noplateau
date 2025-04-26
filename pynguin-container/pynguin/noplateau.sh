@@ -226,7 +226,7 @@ function measure_coverage {
 # --- NoPlateau Loop ---
 cov=0
 toggle=0
-max_iterations=10 # Safety break
+max_iterations=100 # Safety break
 iterations=0
 
 while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
