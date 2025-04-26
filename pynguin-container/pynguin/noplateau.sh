@@ -170,29 +170,23 @@ function run_coverup {
 
 function make_diverse_tests {
     echo ">>> Making more diverse tests (Mistral - currently placeholder)"
-    time_before=$SECONDS
 
-    # --- Placeholder for diversity generation logic ---
-    # bash /pynguin/merge_tests.sh $test_dir
-    # mistral_script=$test_dir/llm_tests.py
-    # python3.10 /pynguin/mistral.py \
-    #     --input "$original_target_file_path" \ # Use the correct path
-    #     --target_module_name "$target_module" \
-    #     --tests "${test_dir}/test_merged_${filename%.py}.py" \ # Adjust merged test name if needed
-    #     --output $mistral_script \
-    #     --diversity True
-    # bash /pynguin/remove_failing_tests.sh $mistral_script
-    #
-    # echo ">>> Trimming markdown syntax from the generated file..."
-    # sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $mistral_script
-    # sed -i '/your_module/d' $mistral_script # Check if this is still needed
-    echo "Diversity generation step needs to be implemented/reviewed."
-    # --- End Placeholder ---
+    bash /pynguin/merge_tests.sh $test_dir
+    mistral_script=$test_dir/llm_tests.py
+    python3.10 /pynguin/mistral.py \
+         --input "$original_target_file_path" \
+         --target_module_name "$target_module" \
+         --tests "$test_dir/test_merged.py" \
+         --output $mistral_script \
+         --diversity True
+    
+    echo ">>> Trimming markdown syntax from the generated file..."
+    sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $mistral_script
+    sed -i '/your_module/d' $mistral_script
 
-    time_after=$SECONDS
-    # Estimate time used by this step if implemented
-    # TIME_USED=$((TIME_USED + time_after - time_before))
-    TIME_USED=$((TIME_USED + 15)) # Using the original estimated time for now
+    bash /pynguin/remove_failing_tests.sh $mistral_script
+
+    TIME_USED=$((TIME_USED + 15))
 }
 
 function measure_coverage {
@@ -251,11 +245,10 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
         run_coverup
         toggle=1
     elif [ $toggle -eq 1 ]; then
-        run_pynguin
+        make_diverse_tests
         toggle=2
     elif [ $toggle -eq 2 ]; then
-        # TODO integrate diversity again
-    #     make_diverse_tests
+        run_pynguin
         toggle=0
     else
        echo "Error: Invalid toggle state: $toggle"
