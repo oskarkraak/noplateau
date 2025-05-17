@@ -2,6 +2,7 @@
 
 # === Config ===
 TEST_DIR=$1
+ITERATION=$2
 MERGED_FILE="${TEST_DIR}/test_merged.py"
 
 # === Find all test Python files ===
@@ -16,8 +17,18 @@ echo "🔍 Found ${#TEST_FILES[@]} test files to merge."
 
 # === Rename originals ===
 for file in "${TEST_FILES[@]}"; do
-    mv "$file" "$file.bak"
-    echo "🔁 Renamed $file → $file.bak"
+    #mv "$file" "$file.bak$ITERATION"
+    #echo "🔁 Renamed $file → $file.bak$ITERATION"
+
+    if mv "$file" "$file.bak$ITERATION"; then
+        echo "🔁 Renamed $file → $file.bak$ITERATION"
+        if [ ! -f "$file.bak$ITERATION" ]; then # Double-check
+            echo "    ⚠️ CRITICAL ERROR: mv reported success, but $file.bak$ITERATION does NOT exist!"
+        fi
+    else
+        echo "    ❌ FAILED to rename: $file (Error code: $?)"
+        continue # Skip this file
+    fi
 done
 
 # === Begin merged file ===
@@ -40,7 +51,7 @@ for file in "${TEST_FILES[@]}"; do
             next
         }
         { print }
-    ' "$file.bak" >> "$MERGED_FILE"
+    ' "$file.bak$ITERATION" >> "$MERGED_FILE"
 
     echo "" >> "$MERGED_FILE"
 done
