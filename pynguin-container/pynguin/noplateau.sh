@@ -22,7 +22,7 @@ mkdir -p "$logging_dir"
 coverage_log_file="$logging_dir/coverage_${run_id}.csv"
 # Create CSV header if file doesn't exist
 if [ ! -f "$coverage_log_file" ]; then
-    echo "iteration,coverage,time" > "$coverage_log_file"
+    echo "iteration,finish_time,iteration_type,coverage" > "$coverage_log_file"
 fi
 # ─────────────────
 
@@ -260,17 +260,21 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
         break
     fi
     if [ $toggle -eq 0 ]; then
+        iteration_type="coverup"
         run_coverup
         toggle=1
     elif [ $toggle -eq 1 ]; then
+        iteration_type="diversity"
         make_diverse_tests
         toggle=2
     elif [ $toggle -eq 2 ]; then
+        iteration_type="pynguin"
         run_pynguin
         toggle=0
     else
-       echo "Error: Invalid toggle state: $toggle"
-       break
+        echo "Error: Invalid toggle state: $toggle"
+        iteration_type="unknown"
+        break
     fi
 
     measure_coverage_output=$(measure_coverage)
@@ -279,7 +283,7 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     echo "Current coverage: ${cov}%"
 
     # ─── LOGGING ───
-    echo "$iterations,$cov,$SECONDS" >> $coverage_log_file
+    echo "$iterations,$SECONDS,$iteration_type,$cov" >> $coverage_log_file
     # ─────────────────
 
     if [ "$cov" -ge 100 ]; then
