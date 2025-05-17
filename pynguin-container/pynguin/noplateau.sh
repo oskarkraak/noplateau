@@ -15,6 +15,13 @@ OPENAI_API_KEY=$5
 target_dir=$6
 output_dir=$7
 
+# ─── LOGGING ───
+logging_dir="$output_dir/logs/"
+run_id=$8
+mkdir -p "$logging_dir"
+coverage_log_file="$logging_dir/coverage_${run_id}.log"
+# ─────────────────
+
 test_dir="$output_dir/noplateautests/"
 base_dir=$(pwd)
 
@@ -133,7 +140,7 @@ function run_coverup {
     cd $coverup_dir
     time_before=$SECONDS
 
-    echo "PYTHONPATH: $PYTHONPATH" # TODO debug
+    echo "PYTHONPATH: $PYTHONPATH"
 
     # Check if the target file exists in the coverup dir before running
     if [ ! -f "$original_target_file_path" ]; then
@@ -259,6 +266,11 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     echo "$measure_coverage_output"
     cov=$(echo "$measure_coverage_output" | tail -n 1)
     echo "Current coverage: ${cov}%"
+
+    # ─── LOGGING ───
+    echo "Iteration $iterations: ${cov}% coverage" >> $coverage_log_file
+    # ─────────────────
+
     if [ "$cov" -ge 100 ]; then
         echo "✅ Coverage is 100%! Done."
         break
