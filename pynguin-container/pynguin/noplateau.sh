@@ -160,7 +160,9 @@ function run_coverup {
         --source-dir $target_module_folder \
         --tests-dir $coverup_test_dir \
         --model gpt-4o-mini \
-        --no-isolate-tests
+        --no-isolate-tests \
+        --log-file "$coverup_test_dir/coverup-log_${run_id}_iteration_${iterations}.txt" \
+        --iteration $iterations
 
     local coverup_exit_code=$?
     if [ $coverup_exit_code -ne 0 ]; then

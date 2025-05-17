@@ -18,7 +18,6 @@ from . import prompt
 
 
 
-coverage_log_file = "coverage-log"
 total_lines = 0
 covered_lines = 0
 total_branches = 0
@@ -27,12 +26,14 @@ percent_covered = 0
 
 coverage_map = {}
 
-def log_coverage(coverage_data: dict, test:str = "") -> None:
+def log_coverage(coverage_data: dict) -> None:
     """Logs the coverage data to the 'coverage-log' file and calculates total coverage."""
+    coverage_log_file_name = "coverup-coverage_iteration_" + str(args.iteration) + ".txt"
     summary = coverage_data.get("summary")
-    with open(coverage_log_file, "a") as log_file:
-        log_file.write(f"---- {datetime.now().isoformat(timespec='seconds')} Coverage Data ----\n")
-        log_file.write(json.dumps(summary, indent=2))
+    with open(args.tests_dir/coverage_log_file_name, "a") as coverage_log_file:
+        coverage_log_file.write(f"---- {datetime.now().isoformat(timespec='seconds')} Coverage Data ----\n")
+        coverage_log_file.write(json.dumps(summary, indent=2))
+
 """
     summary = coverage_data.get("summary")
     if total_lines == 0:
@@ -184,6 +185,11 @@ def parse_args(args=None):
 
     ap.add_argument('--version', action='version',
                     version=f"%(prog)s v{__version__} (Python {'.'.join(map(str, sys.version_info[:3]))})")
+
+    ### NoPlateau-specific options
+    ap.add_argument('--iteration', type=int, required=True,
+                    help='NoPlateau iteration number to use in the coverage log file name')
+    ###
 
     args = ap.parse_args(args)
 
