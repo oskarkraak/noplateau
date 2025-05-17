@@ -1,6 +1,9 @@
 #!/bin/bash
 
 TEST_FILE=$1
+ITERATION=$2
+
+cp $TEST_FILE $TEST_FILE-uncleaned.bak$ITERATION
 
 # 1. Run pytest and capture failing test names
 FAILED_TESTS=$(pytest "$TEST_FILE" --tb=short -q --disable-warnings | grep -oP '^FAILED \K.*?(?=::)' | sort | uniq)
