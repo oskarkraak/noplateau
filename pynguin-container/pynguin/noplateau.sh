@@ -94,8 +94,7 @@ function run_pynguin {
     echo ">>> Pynguin"
     time_before=$SECONDS
 
-    # Assuming merge_tests.sh and remove_failing_tests.sh handle paths correctly
-    bash /pynguin/merge_tests.sh $test_dir
+    bash /pynguin/merge_tests.sh $test_dir $iterations
     export PYNGUIN_DANGER_AWARE=true
     TIME_LEFT=$((time_budget - TIME_USED))
     max_search_time=$((TIME_LEFT - estimated_pynguin_overhead_time))
@@ -178,7 +177,7 @@ function run_coverup {
 function make_diverse_tests {
     echo ">>> Making more diverse tests (Mistral - currently placeholder)"
 
-    bash /pynguin/merge_tests.sh $test_dir
+    bash /pynguin/merge_tests.sh $test_dir $iterations
     mistral_script=$test_dir/llm_tests.py
     python3.10 /pynguin/mistral.py \
          --input "$original_target_file_path" \
@@ -191,7 +190,7 @@ function make_diverse_tests {
     sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $mistral_script
     sed -i '/your_module/d' $mistral_script
 
-    bash /pynguin/remove_failing_tests.sh $mistral_script
+    bash /pynguin/remove_failing_tests.sh $mistral_script $iterations
 
     TIME_USED=$((TIME_USED + 15))
 }
