@@ -177,6 +177,8 @@ PYNGUIN_DOCKER_IMAGE_PATH="{run.docker_images["pynguin"][0]}"
 cleanup () {{
   cp "${{OUTPUT_DIR}}/statistics.csv" \\
     "${{RESULTS_BASE_DIR}}/statistics-{run.run_id}.csv" || true
+  cp "${{OUTPUT_DIR}}/logs/" \\
+    "${{RESULTS_BASE_DIR}}/logs-{run.run_id}/" || true
 
   cwd=$(pwd)
   cd "${{OUTPUT_DIR}}" || true
@@ -226,9 +228,7 @@ apptainer run \
     ${{OPENAI_API_KEY}} \\
     /input \\
     /output \\
-    /output \\
-    -v \\
-    {" ".join(run.configuration_options)}
+    {run.iteration}
 
 cleanup
 """
