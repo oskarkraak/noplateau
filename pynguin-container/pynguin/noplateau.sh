@@ -118,7 +118,10 @@ function run_pynguin {
         --coverage-metrics BRANCH \
         --maximum_search_time "$max_search_time" \
         --maximum_coverage_plateau 30 \
-        --verbose
+        --verbose \
+        --report-dir "$logging_dir/pynguin-report_${run_id}_iteration_${iterations}" \
+        --timeline_interval=5000000000 \
+        --output_variables Coverage CoverageTimeline AlgorithmIterations TotalTime
 
     local pynguin_exit_code=$? # Capture exit code
     if [ $pynguin_exit_code -ne 0 ]; then
