@@ -2,8 +2,6 @@
 
 SECONDS=0
 
-mkdir FILE
-
 # constants
 time_budget=120
 estimated_pynguin_overhead_time=30
@@ -22,7 +20,7 @@ mkdir -p "$logging_dir"
 coverage_log_file="$logging_dir/coverage_${run_id}.csv"
 # Create CSV header if file doesn't exist
 if [ ! -f "$coverage_log_file" ]; then
-    echo "iteration,finish_time,iteration_type,coverage" > "$coverage_log_file"
+    echo "iteration,finish_timestamp,iteration_type,coverage" > "$coverage_log_file"
 fi
 # ─────────────────
 
@@ -69,12 +67,10 @@ echo ">>> coverup_test_dir: $coverup_test_dir"
 
 
 echo "> Running NoPlateau:"
-#echo ">>> $base_dir"
 echo ">>> Time budget: $time_budget"
 echo ">>> Test dir: $test_dir"
 echo ">>> Target module: $target_module"
 echo ">>> Seed: $seed"
-# echo ">>> API key: $OPENAI_API_KEY" # Avoid logging API keys
 echo ">>> Target dir: $target_dir"
 echo ">>> Output dir: $output_dir"
 
@@ -185,6 +181,7 @@ function run_coverup {
 
 function make_diverse_tests {
     echo ">>> Making more diverse tests"
+    time_before=$SECONDS
 
     bash /pynguin/merge_tests.sh $test_dir $iterations
     mistral_script=$test_dir/llm_tests.py
@@ -201,7 +198,8 @@ function make_diverse_tests {
 
     bash /pynguin/remove_failing_tests.sh $mistral_script $iterations
 
-    TIME_USED=$((TIME_USED + 15))
+    time_after=$SECONDS
+    TIME_USED=$((TIME_USED + time_after - time_before))
 }
 
 function measure_coverage {
@@ -285,7 +283,7 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     echo "Current coverage: ${cov}%"
 
     # ─── LOGGING ───
-    echo "$iterations,$SECONDS,$iteration_type,$cov" >> $coverage_log_file
+    echo "$iterations,$TIME_USED,$iteration_type,$cov" >> $coverage_log_file
     # ─────────────────
 
     if [ "$cov" -ge 100 ]; then
@@ -293,7 +291,7 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
         break
     fi
 
-    echo ">>> Iteration $iterations finished. Cumulative time used: $SECONDS seconds"
+    echo ">>> Iteration $iterations finished. Cumulative time used: $TIME_USED seconds"
 done
 
 if [ $iterations -ge $max_iterations ]; then
