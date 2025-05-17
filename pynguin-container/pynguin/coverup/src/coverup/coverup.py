@@ -531,13 +531,14 @@ async def improve_coverage(chatter: llm.Chatter, prompter: prompt.Prompter, seg:
     if args.dry_run:
         return True
 
-    wild = False
+    #wild = False
     while True:
         attempts += 1
         if (attempts > args.max_attempts+1):
             log_write(seg, "Too many attempts, giving up")
             break
         
+        """
         if (attempts == args.max_attempts):
             wild = True
             evo_search_instr = "Give me entirely new tests for this that would increase the diversity of an evolutionary search."
@@ -547,7 +548,8 @@ async def improve_coverage(chatter: llm.Chatter, prompter: prompt.Prompter, seg:
                 'content': f"{edge_case_instr} Respond only with the complete Python code in backticks, omit the function under test but do import it from its respective module"
             }
             messages.extend([px])
-        
+        """
+
         response = await chatter.chat(messages, ctx=seg)
         if not response:
             log_write(seg, "giving up")
