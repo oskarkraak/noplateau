@@ -25,16 +25,28 @@ def main():
             tests = f.read().strip()
 
     if args.diversity:
-        prompt = "You're an expert fuzzer and the most creative python test driven developer. You know that your team can write tests, but you are particularly good at writing unique tests. Write tests covering all edge cases and combinations that could break the following function under test:\n\n"
+        prompt = f"""
+        You're an expert fuzzer and the most creative python test driven developer. You know that your team can write tests, but you are particularly good at writing unique tests. 
+        
+        Make sure to import the functions from {target_module_name}. Respond only with the python code in backticks.
+        
+        Write tests covering all edge cases and combinations that could break the function under test provided by the user.
+        """
     else:
-        prompt = "You're an expert python test driven developer. Write tests for the following function under test:\n\n"
-    input_text = prompt + input_text
+        prompt = f"""
+        You're an expert python test driven developer.
+        
+        Make sure to import the functions from {target_module_name}. Respond only with the python code in backticks.
+        
+        Write tests for the following function under test provided by the user.
+        """
+    input_text = prompt
     if args.tests:
         input_text = (input_text + "\n\nYour team has written the following tests:\n\n" 
-                + args.tests + "\n\nYou need to extend these, build on top of them.")
-    input_text = input_text + "\n\nMake sure to import the functions from " + target_module_name + ". Respond only with the python code."
+                + tests + "\n\nYou need to extend these, build on top of them.")
+    input_text = input_text + "\n\n"
 
-    result = mistral(input_text)
+    result = chatgpt(prompt, tests)
 
     # Write output to file
     with open(args.output, "w", encoding="utf-8") as f:
@@ -53,21 +65,21 @@ def mistral(input_text: str) -> str:
     print(f"[{timestamp}] Received Mistral response")
     return result
 
-def chatgpt(input_text: str) -> str:
+def chatgpt(system_prompt: str, user_prompt: str) -> str:
     # Initialize OpenAI API Client
     #os.getenv("OPENAI_API_KEY")
     format = "%H:%M:%S"
     timestamp = datetime.datetime.now().strftime(format)
     print(f"[{timestamp}] Prompting ChatGPT...")
-    response = client.chat.completions.create(model="gpt-4o",
+    response = client.chat.completions.create(model="gpt-4o-mini",
     messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": input_text},
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
     ],
-    max_tokens=1500,
+    #max_tokens=1500,
     n=1,
     stop=None,
-    temperature=0.7)
+    temperature=0.0)
     result = response.choices[0].message.content.strip()
     timestamp = datetime.datetime.now().strftime(format)
     print(f"[{timestamp}] Received ChatGPT response")

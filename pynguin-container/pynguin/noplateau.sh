@@ -179,7 +179,7 @@ function run_coverup {
 }
 
 function make_diverse_tests {
-    echo ">>> Making more diverse tests (Mistral - currently placeholder)"
+    echo ">>> Making more diverse tests"
 
     bash /pynguin/merge_tests.sh $test_dir $iterations
     mistral_script=$test_dir/llm_tests.py
@@ -190,7 +190,7 @@ function make_diverse_tests {
          --output $mistral_script \
          --diversity True
     
-    echo ">>> Trimming markdown syntax from the generated file..."
+    echo ">>> Trimming markdown syntax from the generated file \"$mistral_script\"..."
     sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $mistral_script
     sed -i '/your_module/d' $mistral_script
 
