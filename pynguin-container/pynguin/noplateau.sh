@@ -199,8 +199,12 @@ function measure_coverage {
     echo "▶️ Running tests with coverage..."
     
     echo "PYTHONPATH: $PYTHONPATH"
+    
+    # Create coverage report filename based on iteration and run_id
+    local cov_report_file="$logging_dir/coverage_report_${run_id}_iteration_${iterations}.xml"
+    
     local output
-    output=$(python3.10 -m pytest --cov-branch --cov="$target_module" "$test_dir" --cov-report=term 2>&1)
+    output=$(python3.10 -m pytest --cov-branch --cov="$target_module" "$test_dir" --cov-report=term --cov-report=xml:"$cov_report_file" 2>&1)
     local pytest_exit_code=$?
     echo "$output"
 
@@ -226,6 +230,7 @@ function measure_coverage {
     fi
 
     echo "📊 Extracted total coverage: ${coverage}%"
+    echo "📝 Full coverage report saved to: $cov_report_file"
     echo "$coverage"
 }
 
