@@ -19,7 +19,11 @@ output_dir=$7
 logging_dir="$output_dir/logs/"
 run_id=$8
 mkdir -p "$logging_dir"
-coverage_log_file="$logging_dir/coverage_${run_id}.log"
+coverage_log_file="$logging_dir/coverage_${run_id}.csv"
+# Create CSV header if file doesn't exist
+if [ ! -f "$coverage_log_file" ]; then
+    echo "iteration,coverage,time" > "$coverage_log_file"
+fi
 # ─────────────────
 
 test_dir="$output_dir/noplateautests/"
@@ -272,7 +276,7 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     echo "Current coverage: ${cov}%"
 
     # ─── LOGGING ───
-    echo "Iteration $iterations: ${cov}% coverage" >> $coverage_log_file
+    echo "$iterations,$cov,$SECONDS" >> $coverage_log_file
     # ─────────────────
 
     if [ "$cov" -ge 100 ]; then
