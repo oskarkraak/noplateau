@@ -95,7 +95,10 @@ class InitialPopulationProvider:
             for name in files:
                 logger.debug("--- checking file \'%s\'", name)
                 assert isinstance(name, str)
-                if module_name in name and "test_" in name and name.endswith(".py"):
+                is_for_module = module_name in name
+                is_test = "test_" in name
+                is_python_file = name.endswith(".py")
+                if is_for_module and is_test and is_python_file:
                     logger.info("%s IS a test file", name)
                     result.append(root_path / name)
                     break
