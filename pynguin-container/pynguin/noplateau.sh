@@ -104,7 +104,7 @@ function run_pynguin {
     fi
 
     echo "Running pynguin with max search time: $max_search_time seconds"
-    pynguin \
+    python3.10 /pynguin/src/pynguin/__main__.py \
         --project-path "$target_dir" \
         --module-name "$target_module" \
         --output-path "$test_dir" \
