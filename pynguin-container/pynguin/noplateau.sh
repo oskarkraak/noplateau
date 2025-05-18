@@ -248,6 +248,13 @@ function remove_all_failing_tests {
     done
 }
 
+function backup_test_files {
+    local backup_dir="$output_dir/test_backups/iteration_${iterations}"
+    echo ">>> Creating backup of test files in $backup_dir"
+    mkdir -p "$backup_dir"
+    cp "$test_dir"/*.py "$backup_dir"/ 2>/dev/null || echo "No .py files to backup"
+}
+
 # --- NoPlateau Loop ---
 cov=0
 toggle=0
@@ -292,6 +299,8 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     # ─── LOGGING ───
     echo "$iterations,$TIME_USED,$iteration_type,$cov" >> $coverage_log_file
     # ─────────────────
+
+    backup_test_files
 
     if [ "$cov" -ge 100 ]; then
         echo "✅ Coverage is 100%! Done."

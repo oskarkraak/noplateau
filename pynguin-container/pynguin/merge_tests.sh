@@ -15,22 +15,6 @@ fi
 
 echo "🔍 Found ${#TEST_FILES[@]} test files to merge."
 
-# === Rename originals ===
-for file in "${TEST_FILES[@]}"; do
-    #mv "$file" "$file.bak$ITERATION"
-    #echo "🔁 Renamed $file → $file.bak$ITERATION"
-
-    if mv "$file" "$file.bak$ITERATION"; then
-        echo "🔁 Renamed $file → $file.bak$ITERATION"
-        if [ ! -f "$file.bak$ITERATION" ]; then # Double-check
-            echo "    ⚠️ CRITICAL ERROR: mv reported success, but $file.bak$ITERATION does NOT exist!"
-        fi
-    else
-        echo "    ❌ FAILED to rename: $file (Error code: $?)"
-        continue # Skip this file
-    fi
-done
-
 # === Begin merged file ===
 echo "# Auto-merged test file for Pynguin" > "$MERGED_FILE"
 echo "" >> "$MERGED_FILE"
@@ -51,7 +35,9 @@ for file in "${TEST_FILES[@]}"; do
             next
         }
         { print }
-    ' "$file.bak$ITERATION" >> "$MERGED_FILE"
+    ' "$file" >> "$MERGED_FILE"
+
+    rm $file
 
     echo "" >> "$MERGED_FILE"
 done

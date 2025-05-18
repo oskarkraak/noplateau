@@ -3,8 +3,6 @@
 TEST_FILE=$1
 ITERATION=$2
 
-cp $TEST_FILE $TEST_FILE-uncleaned.bak$ITERATION
-
 # 1. Run pytest and capture output
 PYTEST_OUTPUT=$(pytest "$TEST_FILE" -v --tb=short -q --disable-warnings)
 
