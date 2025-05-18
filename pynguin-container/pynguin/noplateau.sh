@@ -76,7 +76,8 @@ echo ">>> Output dir: $output_dir"
 
 export OPENAI_API_KEY="$OPENAI_API_KEY"
 
-export PYTHONPATH="$target_dir:$PYTHONPATH"
+export PYTHONPATH=/pynguin/src:$PYTHONPATH # Pynguin
+export PYTHONPATH="$target_dir:$PYTHONPATH" # Pytest & CoverUp
 echo "PYTHONPATH=$PYTHONPATH"
 
 python3.10 -c "import $target_module"
