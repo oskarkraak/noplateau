@@ -184,19 +184,19 @@ function make_diverse_tests {
     time_before=$SECONDS
 
     bash /pynguin/merge_tests.sh $test_dir $iterations
-    mistral_script=$test_dir/llm_tests.py
+    llm_tests=$test_dir/llm_tests.py
     python3.10 /pynguin/mistral.py \
          --input "$original_target_file_path" \
          --target_module_name "$target_module" \
          --tests "$test_dir/test_merged.py" \
-         --output $mistral_script \
+         --output $llm_tests \
          --diversity True
     
-    echo ">>> Trimming markdown syntax from the generated file \"$mistral_script\"..."
-    sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $mistral_script
-    sed -i '/your_module/d' $mistral_script
+    echo ">>> Trimming markdown syntax from the generated file \"$llm_tests\"..."
+    sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $llm_tests
+    sed -i '/your_module/d' $llm_tests
 
-    bash /pynguin/remove_failing_tests.sh $mistral_script $iterations
+    bash /pynguin/remove_failing_tests.sh $llm_tests $iterations
 
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
@@ -239,6 +239,12 @@ function measure_coverage {
     echo "📊 Extracted total coverage: ${coverage}%"
     echo "📝 Full coverage report saved to: $cov_report_file"
     echo "$coverage"
+}
+
+function remove_all_failing_tests {
+    for py_file in "$test_dir"/*.py; do
+        bash /pynguin/remove_failing_tests.sh "$py_file" $iterations
+    done
 }
 
 # --- NoPlateau Loop ---

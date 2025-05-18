@@ -5,8 +5,14 @@ ITERATION=$2
 
 cp $TEST_FILE $TEST_FILE-uncleaned.bak$ITERATION
 
-# 1. Run pytest and capture failing test names
-FAILED_TESTS=$(pytest "$TEST_FILE" --tb=short -q --disable-warnings | grep -oP '^FAILED \K.*?(?=::)' | sort | uniq)
+# 1. Run pytest and capture output
+PYTEST_OUTPUT=$(pytest "$TEST_FILE" -v --tb=short -q --disable-warnings)
+
+# Extract test function names from lines like "FAILED generated-tests/test_merged.py::test_llm_tests_test_timer_multiple_starts"
+FAILED_TESTS=$(echo "$PYTEST_OUTPUT" | grep "FAILED" | sed -E 's/.*::(test_[a-zA-Z0-9_]+).*/\1/' | sort | uniq)
+
+echo "Debug: Pytest output contains $(echo "$PYTEST_OUTPUT" | grep -c "FAILED") FAILED lines"
+echo "Debug: Extracted $(echo "$FAILED_TESTS" | wc -l) failing test names"
 
 if [ -z "$FAILED_TESTS" ]; then
   echo "✅ No failing tests. You're good."
