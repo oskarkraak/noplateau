@@ -180,10 +180,9 @@ cleanup () {{
   cp "${{OUTPUT_DIR}}/logs/" \\
     "${{RESULTS_BASE_DIR}}/logs-{run.run_id}/" || true
 
-  cwd=$(pwd)
-  cd "${{OUTPUT_DIR}}" || true
-  tar cJf "${{RESULTS_DIR}}/results-{run.run_id}.tar.xz" . || true
-  cd "${{cwd}}" || true
+  # Copy raw results instead of creating a tar archive
+  mkdir -p "${{RESULTS_DIR}}/results-{run.run_id}" || true
+  cp -r "${{OUTPUT_DIR}}/"* "${{RESULTS_DIR}}/results-{run.run_id}/" || true
 
   rm -rf "${{WORK_DIR}}" || true
 }}
