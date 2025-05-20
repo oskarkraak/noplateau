@@ -129,11 +129,13 @@ function run_pynguin {
          echo "Pynguin completed successfully."
     fi
 
-    time_after=$SECONDS
-    TIME_USED=$((TIME_USED + time_after - time_before))
+    bash /pynguin/remove_failing_tests.sh $llm_tests $iterations
 
     rm -r $coverup_test_dir
     cp -r $test_dir $coverup_test_dir
+
+    time_after=$SECONDS
+    TIME_USED=$((TIME_USED + time_after - time_before))
 
     return $pynguin_exit_code # Return Pynguin's exit code
 }
@@ -168,15 +170,13 @@ function run_coverup {
         echo "CoverUp completed successfully."
     fi
 
-    #cat coverup-log
-
-    time_after=$SECONDS
-    TIME_USED=$((TIME_USED + time_after - time_before))
     cd $base_dir
 
     rm -r $test_dir
     cp -r $coverup_test_dir $test_dir
 
+    time_after=$SECONDS
+    TIME_USED=$((TIME_USED + time_after - time_before))
     return $coverup_exit_code # Return CoverUp's exit code
 }
 
