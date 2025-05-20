@@ -95,7 +95,7 @@ function run_pynguin {
     echo ">>> Pynguin"
     time_before=$SECONDS
 
-    bash /pynguin/merge_tests.sh $test_dir $iterations
+    bash /pynguin/merge_tests.sh $test_dir $iterations "test_merged.py"
     export PYNGUIN_DANGER_AWARE=true
     TIME_LEFT=$((time_budget - TIME_USED))
     max_search_time=$((TIME_LEFT - estimated_pynguin_overhead_time))
@@ -184,7 +184,7 @@ function make_diverse_tests {
     echo ">>> Making more diverse tests"
     time_before=$SECONDS
 
-    bash /pynguin/merge_tests.sh $test_dir $iterations
+    bash /pynguin/merge_tests.sh $test_dir $iterations "test_merged.py"
     llm_tests=$test_dir/test_llm_diversity.py
     python3.10 /pynguin/mistral.py \
          --input "$original_target_file_path" \

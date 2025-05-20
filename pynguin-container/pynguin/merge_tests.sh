@@ -3,7 +3,8 @@
 # === Config ===
 TEST_DIR=$1
 ITERATION=$2
-MERGED_FILE="${TEST_DIR}/test_merged.py"
+OUTPUT_FILE_NAME=$3
+MERGED_FILE="${TEST_DIR}/OUTPUT_FILE_NAME.py"
 
 # === Find all test Python files ===
 TEST_FILES=($(find "$TEST_DIR" -maxdepth 1 -type f -name "*.py" ! -name "$(basename "$MERGED_FILE")"))
