@@ -185,7 +185,7 @@ function make_diverse_tests {
     time_before=$SECONDS
 
     bash /pynguin/merge_tests.sh $test_dir $iterations
-    llm_tests=$test_dir/llm_tests.py
+    llm_tests=$test_dir/test_llm_diversity.py
     python3.10 /pynguin/mistral.py \
          --input "$original_target_file_path" \
          --target_module_name "$target_module" \
