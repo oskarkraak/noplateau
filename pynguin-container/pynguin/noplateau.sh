@@ -1,11 +1,15 @@
 #!/bin/bash
 
-SECONDS=0
-
 # constants
-time_budget=120
 estimated_pynguin_overhead_time=30
 coverup_dir="/pynguin/coverup/src"
+# parameters
+time_budget=600
+pynguin_max_plateau=30
+coverup_max_plateau=3
+
+
+SECONDS=0
 
 target_module=$3
 seed=$4
@@ -117,7 +121,7 @@ function run_pynguin {
         --seed "$seed" \
         --coverage-metrics BRANCH \
         --maximum_search_time "$max_search_time" \
-        --maximum_coverage_plateau 30 \
+        --maximum_coverage_plateau $pynguin_max_plateau \
         --verbose \
         --report-dir "$logging_dir/pynguin-report_${run_id}_iteration_${iterations}" \
         --timeline_interval=5000000000 \
@@ -164,6 +168,7 @@ function run_coverup {
         --model gpt-4o-mini \
         --no-isolate-tests \
         --log-file "$coverup_test_dir/coverup-log_${run_id}_iteration_${iterations}.txt" \
+        --max-attempts $coverup_max_plateau \
         --iteration $iterations
 
     local coverup_exit_code=$?
