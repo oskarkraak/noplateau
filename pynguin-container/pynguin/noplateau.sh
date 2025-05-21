@@ -20,7 +20,7 @@ mkdir -p "$logging_dir"
 coverage_log_file="$logging_dir/coverage_${run_id}.csv"
 # Create CSV header if file doesn't exist
 if [ ! -f "$coverage_log_file" ]; then
-    echo "iteration,finish_timestamp,iteration_type,coverage" > "$coverage_log_file"
+    echo "iteration,finish_timestamp,finish_total_time_used,iteration_type,coverage" > "$coverage_log_file"
 fi
 # ─────────────────
 
@@ -297,7 +297,7 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     echo "Current coverage: ${cov}%"
 
     # ─── LOGGING ───
-    echo "$iterations,$TIME_USED,$iteration_type,$cov" >> $coverage_log_file
+    echo "$iterations,$SECONDS,$TIME_USED,$iteration_type,$cov" >> $coverage_log_file
     # ─────────────────
 
     backup_test_files
