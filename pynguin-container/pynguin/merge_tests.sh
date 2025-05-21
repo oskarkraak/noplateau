@@ -34,8 +34,6 @@ for file in "${TEST_FILES[@]}"; do
 
     # Increment counter for next file
     test_counter=$((test_counter + 1))
-    
-    rm $file
 
     echo "" >> "$MERGED_FILE"
 done

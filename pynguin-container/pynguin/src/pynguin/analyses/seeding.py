@@ -98,7 +98,8 @@ class InitialPopulationProvider:
                 is_for_module = module_name in name
                 is_test = "test_" in name
                 is_python_file = name.endswith(".py")
-                if is_test and is_python_file:
+                #if is_for_module and is_test and is_python_file:
+                if "test_merged" in name:  # NoPlateau specific
                     logger.info("%s IS a test file", name)
                     result.append(root_path / name)
                     break

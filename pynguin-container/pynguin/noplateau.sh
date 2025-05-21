@@ -95,7 +95,6 @@ function run_pynguin {
     echo ">>> Pynguin"
     time_before=$SECONDS
 
-    bash /pynguin/merge_tests.sh $test_dir $iterations "test_merged.py"
     export PYNGUIN_DANGER_AWARE=true
     TIME_LEFT=$((time_budget - TIME_USED))
     max_search_time=$((TIME_LEFT - estimated_pynguin_overhead_time))
@@ -103,6 +102,10 @@ function run_pynguin {
         echo "Not enough time budget left for Pynguin search."
         return 1 # Use return code to indicate failure/skip
     fi
+
+    bash /pynguin/merge_tests.sh $test_dir $iterations "test_merged.py"
+
+    ls $test_dir
 
     echo "Running pynguin with max search time: $max_search_time seconds"
     python3.10 /pynguin/src/pynguin/__main__.py \
@@ -118,7 +121,7 @@ function run_pynguin {
         --verbose \
         --report-dir "$logging_dir/pynguin-report_${run_id}_iteration_${iterations}" \
         --timeline_interval=5000000000 \
-        --output_variables Coverage CoverageTimeline AlgorithmIterations TotalTime
+        --output_variables Coverage AlgorithmIterations TotalTime CoverageTimeline
 
     local pynguin_exit_code=$? # Capture exit code
     if [ $pynguin_exit_code -ne 0 ]; then
@@ -129,7 +132,7 @@ function run_pynguin {
          echo "Pynguin completed successfully."
     fi
 
-    bash /pynguin/remove_failing_tests.sh $llm_tests $iterations
+    rm -f $test_dir/test_merged.py
 
     rm -r $coverup_test_dir
     cp -r $test_dir $coverup_test_dir
@@ -193,6 +196,8 @@ function make_diverse_tests {
          --output $llm_tests \
          --diversity True
     
+    rm -f $test_dir/test_merged.py
+
     echo ">>> Trimming markdown syntax from the generated file \"$llm_tests\"..."
     sed -i '1{/^\s*```python\s*$/d}; ${/^\s*```\s*$/d}' $llm_tests
     sed -i '/your_module/d' $llm_tests
