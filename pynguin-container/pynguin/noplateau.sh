@@ -24,7 +24,7 @@ mkdir -p "$logging_dir"
 coverage_log_file="$logging_dir/coverage_${run_id}.csv"
 # Create CSV header if file doesn't exist
 if [ ! -f "$coverage_log_file" ]; then
-    echo "iteration,finish_timestamp,finish_total_time_used,iteration_type,coverage" > "$coverage_log_file"
+    echo "iteration,finish_timestamp,finish_total_time_used,iteration_type,best_coverage,coverage" > "$coverage_log_file"
 fi
 # ─────────────────
 
@@ -270,6 +270,7 @@ cov=0
 toggle=0
 max_iterations=100 # Safety break
 iterations=0
+best_coverage=0
 
 while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     iterations=$((iterations + 1))
@@ -306,8 +307,12 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
     cov=$(echo "$measure_coverage_output" | tail -n 1)
     echo "Current coverage: ${cov}%"
 
+    if [ "$cov" -gt "$best_coverage" ]; then
+        best_coverage=$cov
+    fi
+
     # ─── LOGGING ───
-    echo "$iterations,$SECONDS,$TIME_USED,$iteration_type,$cov" >> $coverage_log_file
+    echo "$iterations,$SECONDS,$TIME_USED,$iteration_type,$best_coverage,$cov" >> $coverage_log_file
     # ─────────────────
 
     backup_test_files
