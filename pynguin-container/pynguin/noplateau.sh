@@ -5,7 +5,7 @@ estimated_pynguin_overhead_time=30
 coverup_dir="/pynguin/coverup/src"
 # parameters
 time_budget=600
-pynguin_max_plateau=30
+pynguin_max_plateau=300
 coverup_max_plateau=3
 
 
