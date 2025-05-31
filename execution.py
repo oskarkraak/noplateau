@@ -227,7 +227,10 @@ apptainer run \
     ${{OPENAI_API_KEY}} \\
     /input \\
     /output \\
-    {run.iteration}
+    {run.iteration} \\
+    true \\
+    true \\
+    true
 
 cleanup
 """

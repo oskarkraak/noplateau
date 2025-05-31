@@ -28,6 +28,29 @@ if [ ! -f "$coverage_log_file" ]; then
 fi
 # ─────────────────
 
+echo "iter types"
+echo $9
+echo ${10}
+echo ${11}
+
+# Parse iteration types
+iteration_type_coverup=$9
+iteration_type_diversity=${10}
+iteration_type_pynguin=${11}
+if [ "$iteration_type_coverup" != "true" ] && [ "$iteration_type_diversity" != "true" ]; then
+    pynguin_max_plateau=-1 # Run Pynguin only
+fi
+enabled_types=()
+[ "$iteration_type_coverup" == "true" ] && enabled_types+=("coverup")
+[ "$iteration_type_diversity" == "true" ] && enabled_types+=("diversity")
+[ "$iteration_type_pynguin" == "true" ] && enabled_types+=("pynguin")
+if [ ${#enabled_types[@]} -eq 0 ]; then
+    echo "Error: No enabled iteration types."
+    exit 2
+else
+    echo "Enabled iteration types: ${enabled_types[*]}"
+fi
+
 test_dir="$output_dir/noplateautests/"
 base_dir=$(pwd)
 
@@ -284,23 +307,26 @@ while [ $TIME_USED -lt $time_budget ] && [ $iterations -lt $max_iterations ]; do
         echo "Time budget exceeded."
         break
     fi
-    if [ $toggle -eq 0 ]; then
-        iteration_type="coverup"
-        run_coverup
-        toggle=1
-    elif [ $toggle -eq 1 ]; then
-        iteration_type="diversity"
-        make_diverse_tests
-        toggle=2
-    elif [ $toggle -eq 2 ]; then
-        iteration_type="pynguin"
-        run_pynguin
-        toggle=0
-    else
-        echo "Error: Invalid toggle state: $toggle"
-        iteration_type="unknown"
-        break
-    fi
+
+    current_type="${enabled_types[$toggle]}"
+    iteration_type="$current_type"
+    case "$current_type" in
+        "coverup")
+            run_coverup
+            ;;
+        "diversity")
+            make_diverse_tests
+            ;;
+        "pynguin")
+            run_pynguin
+            ;;
+        *)
+            echo "Error: Unknown iteration type '$current_type'"
+            iteration_type="unknown"
+            break
+            ;;
+    esac
+    toggle=$(( (toggle + 1) % ${#enabled_types[@]} ))
 
     measure_coverage_output=$(measure_coverage)
     echo "$measure_coverage_output"
