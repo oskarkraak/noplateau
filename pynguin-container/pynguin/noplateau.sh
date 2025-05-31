@@ -81,11 +81,14 @@ target_module_file="${target_module##*.}"
 # Extract the folder part (everything before the last dot)
 # Remove the shortest suffix starting with '.' (${string%.*})
 target_module_folder="${target_module%.*}"
+target_module_folder="${target_module_folder//./\/}" # Replace dots with slashes for folder structure
+# Extract the root folder (the first component before any dot)
+target_module_root_folder="${target_module%%.*}"
 
 mkdir $test_dir
 coverup_test_dir=$coverup_dir/generated-tests/
 mkdir $coverup_test_dir
-cp -r $target_dir/$target_module_folder $coverup_dir
+cp -r $target_dir/$target_module_root_folder $coverup_dir
 touch $coverup_dir/$target_module_folder/__init__.py
 
 echo ">>> target_module_folder: $target_module_folder"
