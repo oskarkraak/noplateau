@@ -255,7 +255,7 @@ def _write_array_job_script(num_total_runs: int) -> None:
 #SBATCH --mem=4GB
 #SBATCH --nodes=1-1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=1
 #SBATCH --mem-bind=local
 #SBATCH --array=0-{num_total_runs - 1}
 
