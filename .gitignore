@@ -3,6 +3,7 @@ local/
 scratch/
 pynguin-runs/
 new-data/
+nohup.out
 
 # SPDX-FileCopyrightText: 2019–2024 Pynguin Contributors
 #
