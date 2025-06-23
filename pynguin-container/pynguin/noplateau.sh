@@ -95,6 +95,9 @@ echo ">>> target_module_folder: $target_module_folder"
 echo ">>> target_module_file: $target_module_file"
 echo ">>> coverup_test_dir: $coverup_test_dir"
 
+# Extract just the last two components
+module_import=$(echo "$target_module" | sed 's/.*\.\([^.]*\.[^.]*\)$/\1/')
+echo ">>> Module import: $module_import"
 
 echo "> Running NoPlateau:"
 echo ">>> Time budget: $time_budget"
@@ -108,6 +111,7 @@ export OPENAI_API_KEY="$OPENAI_API_KEY"
 
 export PYTHONPATH=/pynguin/src:$PYTHONPATH # Pynguin
 export PYTHONPATH="$target_dir:$PYTHONPATH" # Pytest & CoverUp
+
 echo "PYTHONPATH=$PYTHONPATH"
 
 python3.10 -c "import $target_module"
@@ -164,9 +168,6 @@ function run_pynguin {
 
     rm -f $test_dir/test_merged.py
 
-    rm -r $coverup_test_dir
-    cp -r $test_dir $coverup_test_dir
-
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
 
@@ -180,11 +181,14 @@ function run_coverup {
 
     echo "PYTHONPATH: $PYTHONPATH"
 
-    # Check if the target file exists in the coverup dir before running
-    if [ ! -f "$original_target_file_path" ]; then
-        echo "ERROR: Target file '$original_target_file_path' not found in coverup directory before running CoverUp."
-        return 1 # Indicate failure
-    fi
+    # in each .py file in $test_dir, replace each occurence of "$target_module" with "$module_import"
+    # this is the format that CoverUp expects
+    for py_file in "$test_dir"/*.py; do
+        sed -i "s|$target_module|$module_import|g" "$py_file"
+    done
+
+    rm -r $coverup_test_dir
+    cp -r $test_dir $coverup_test_dir
 
     # TODO: make coverup quit if time budget is used up (take time as input argument)
     python3.10 -m coverup \
@@ -208,6 +212,11 @@ function run_coverup {
 
     rm -r $test_dir
     cp -r $coverup_test_dir $test_dir
+
+    # revert replacements 
+    for py_file in "$test_dir"/*.py; do
+        sed -i "s|$module_import|$target_module|g" "$py_file"
+    done
 
     time_after=$SECONDS
     TIME_USED=$((TIME_USED + time_after - time_before))
