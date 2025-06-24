@@ -42,38 +42,38 @@
       <description>Modular source code checker</description>
       <sources>projects/flake8/src</sources>
       <modules>
-        <module>flake8.main.debug</module>
-        <module>flake8.options.aggregator</module>
+        <module>flake8.statistics</module>
+      </modules>
+    </project> 
+    <project>
+      <name>dataclasses-json</name>
+      <version>0.5.2</version>
+      <repository>https://github.com/lidatong/dataclasses-json</repository>
+      <description>Encoding and Decoding Dataclasses to and from JSON</description>
+      <sources>projects/dataclasses-json</sources>
+      <modules>
+        <module>dataclasses_json.core</module>
+        <module>dataclasses_json.cfg</module>
       </modules>
     </project>
     <project>
-      <name>pypara</name>
-      <version>0.0.24</version>
-      <repository>https://github.com/vst/pypara</repository>
-      <description>Currencies, Monetary Value Objects, Arithmetic, and Conversion</description>
-      <sources>projects/pypara</sources>
+      <name>httpie</name>
+      <version>2.4.0</version>
+      <repository>https://github.com/httpie/httpie</repository>
+      <description>Modern, user-friendly command-line HTTP client for the API area</description>
+      <sources>projects/httpie</sources>
       <modules>
-        <module>pypara.accounting.journaling</module>
+        <module>httpie.utils</module>
       </modules>
     </project>
     <project>
-      <name>python-semantic-release</name>
-      <version>7.15.3</version>
-      <repository>https://github.com/relekang/python-semantic-release</repository>
-      <description>Automated Semantic Versioning for Python</description>
-      <sources>projects/python-semantic-release</sources>
+      <name>pytutils</name>
+      <version>0.4.1</version>
+      <repository>https://github.com/akatrevorjay/pytutils</repository>
+      <description>Heap of garbage from trevorj</description>
+      <sources>projects/pytutils</sources>
       <modules>
-        <module>semantic_release.ci_checks</module>
-      </modules>
-    </project>
-    <project>
-      <name>docstring_parser</name>
-      <version>0.7.3</version>
-      <repository>https://github.com/rr-/docstring_parser</repository>
-      <description>Parser for Python docstrings</description>
-      <sources>projects/docstring_parser</sources>
-      <modules>
-        <module>docstring_parser.google</module>
+        <module>pytutils.excs</module>
       </modules>
     </project>
   </projects>
