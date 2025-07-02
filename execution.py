@@ -229,8 +229,8 @@ apptainer run \
     /output \\
     {run.iteration} \\
     true \\
-    true \\
-    true
+    false \\
+    false
 
 cleanup
 """
