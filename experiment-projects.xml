@@ -35,54 +35,55 @@
     </output-variables>
   </setup>
   <projects>
+    
     <project>
-      <name>pypara</name>
-      <version>0.0.24</version>
-      <repository>https://github.com/vst/pypara</repository>
-      <description>Currencies, Monetary Value Objects, Arithmetic, and Conversion</description>
-      <sources>projects/pypara</sources>
+      <name>isort</name>
+      <version>5.8.0</version>
+      <repository>https://github.com/PyCQA/isort</repository>
+      <description>Import sorting</description>
+      <sources>projects/isort</sources>
       <modules>
-        <module>pypara.commons.others</module>
+        <module>isort.io</module>
       </modules>
     </project>
     <project>
-      <name>py-backwards</name>
+      <name>flutils</name>
       <version>0.7</version>
-      <repository>https://github.com/nvbn/py-backwards</repository>
-      <description>Bring Python 3.6 features to older versions</description>
-      <sources>projects/py-backwards</sources>
+      <repository>https://gitlab.com/finite-loop/flutils</repository>
+      <description>Utilities for Python</description>
+      <sources>projects/flutils</sources>
       <modules>
-        <module>py_backwards.conf</module>
+        <module>flutils.pathutils</module>
       </modules>
     </project>
     <project>
-      <name>httpie</name>
-      <version>2.4.0</version>
-      <repository>https://github.com/httpie/httpie</repository>
-      <description>Modern, user-friendly command-line HTTP client for the API area</description>
-      <sources>projects/httpie</sources>
+      <name>python-semantic-release</name>
+      <version>7.15.3</version>
+      <repository>https://github.com/relekang/python-semantic-release</repository>
+      <description>Automated Semantic Versioning for Python</description>
+      <sources>projects/python-semantic-release</sources>
       <modules>
-        <module>httpie.output.formatters.json</module>
+        <module>semantic_release.dist</module>
       </modules>
     </project>
     <project>
-      <name>docstring_parser</name>
-      <version>0.7.3</version>
-      <repository>https://github.com/rr-/docstring_parser</repository>
-      <description>Parser for Python docstrings</description>
-      <sources>projects/docstring_parser</sources>
+      <name>flutes</name>
+      <version>0.3.0</version>
+      <repository>https://github.com/huzecong/flutes</repository>
+      <description>Utilities for Python</description>
+      <sources>projects/flutes</sources>
       <modules>
-        <module>docstring_parser.numpydoc</module>
+        <module>flutes.math</module>
       </modules>
     </project>
     <project>
-      <name>black</name>
-      <version>20.8b1</version>
-      <repository>https://github.com/psf/black</repository>
-      <description>The Uncompromising Code Formatter</description>
-      <sources>projects/black/src</sources>
+      <name>pytutils</name>
+      <version>0.4.1</version>
+      <repository>https://github.com/akatrevorjay/pytutils</repository>
+      <description>Heap of garbage from trevorj</description>
+      <sources>projects/pytutils</sources>
       <modules>
-        <module>blib2to3.pgen2.literals</module>
+        <module>pytutils.env</module>
       </modules>
     </project>
   </projects>
