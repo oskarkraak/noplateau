@@ -36,33 +36,13 @@
   </setup>
   <projects>
     <project>
-      <name>flutils</name>
-      <version>0.7</version>
-      <repository>https://gitlab.com/finite-loop/flutils</repository>
-      <description>Utilities for Python</description>
-      <sources>projects/flutils</sources>
+      <name>flake8</name>
+      <version>3.9.0</version>
+      <repository>https://gitlab.com/pycqa/flake8</repository>
+      <description>Modular source code checker</description>
+      <sources>projects/flake8/src</sources>
       <modules>
-        <module>flutils.decorators</module>
-      </modules>
-    </project>
-    <project>
-      <name>pyMonet</name>
-      <version>0.12.0</version>
-      <repository>https://github.com/przemyslawjanpietrzak/pyMonet</repository>
-      <description>High abstract library for functional programming</description>
-      <sources>projects/pyMonet</sources>
-      <modules>
-        <module>pymonet.semigroups</module>
-      </modules>
-    </project>
-    <project>
-      <name>dataclasses-json</name>
-      <version>0.5.2</version>
-      <repository>https://github.com/lidatong/dataclasses-json</repository>
-      <description>Encoding and Decoding Dataclasses to and from JSON</description>
-      <sources>projects/dataclasses-json</sources>
-      <modules>
-        <module>dataclasses_json.undefined</module>
+        <module>flake8.main.debug</module>
       </modules>
     </project>
   </projects>
